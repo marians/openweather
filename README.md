@@ -9,7 +9,17 @@ Frankly, it as been written rather to test how Python modules are distributed. :
 ###Example
 
     import openweather
+
+    # create client
     ow = openweather.OpenWeather()
-    stations = ow.find_stations_near(7.0, 50.0, 100)
+
+    # find weather stations near me
+    stations = ow.find_stations_near(
+    	7.0,  # longitude
+    	50.0, # latitude
+    	100   # kilometer radius
+    )
+
+    # iterate results
     for station in stations:
     	print station
