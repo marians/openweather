@@ -1,5 +1,10 @@
 # encoding: utf-8
 
+"""
+API docs available at
+http://openweathermap.org/wiki/API/2.1/JSON_API
+"""
+
 import json
 import urllib
 
