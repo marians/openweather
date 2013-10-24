@@ -19,6 +19,15 @@ class OpenWeather(object):
             % (lat, lon, radius_limit))
         return self.do_request(url)
 
+    def get_weather(self, station_id):
+        """
+        Returns recent weather data for given station
+        """
+        url = (self.base_url +
+            '/weather/station/%d?type=json'
+            % station_id)
+        return self.do_request(url)
+
     def get_historic_weather(self, station_id, from_date, to_date):
         """
         Loads historic values from given station. Start and end date have

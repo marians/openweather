@@ -23,3 +23,7 @@ Frankly, it as been written rather to test how Python modules are distributed. :
     # iterate results
     for station in stations:
     	print station
+
+    # get current weather at Cologne/Bonn airport
+    # (station id = 4885)
+    print ow.get_weather(4885)
