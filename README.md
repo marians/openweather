@@ -37,7 +37,7 @@ end_date = datetime(2013, 09, 15)
 # default: hourly interval
 print ow.get_historic_weather(4885, start_date, end_date)
 
-# raw data (type)
+# raw data (resolution = "tick")
 print ow.get_historic_weather(4885, start_date, end_date, "tick")
 
 # daily aggregates
