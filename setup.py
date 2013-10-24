@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='openweather',
-      version='0.2',
+      version='0.3',
       description='Beginnings of a client for the OpenWeatherMap.org API',
       author='Marian Steinbach',
       author_email='marian@sendung.de',

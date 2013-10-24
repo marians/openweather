@@ -7,8 +7,10 @@ Frankly, it as been written rather to test how Python modules are distributed. :
     pip install openweather
 
 ###Example
-
+    
+    ```python
     import openweather
+    from datetime import datetime
 
     # create client
     ow = openweather.OpenWeather()
@@ -27,3 +29,17 @@ Frankly, it as been written rather to test how Python modules are distributed. :
     # get current weather at Cologne/Bonn airport
     # (station id = 4885)
     print ow.get_weather(4885)
+
+    # historic weather
+    start_date = datetime(2013, 09, 10)
+    end_date = datetime(2013, 09, 15)
+
+    # default: hourly interval
+    print ow.get_historic_weather(4885, start_date, end_date)
+
+    # raw data (type)
+    print ow.get_historic_weather(4885, start_date, end_date, "tick")
+
+    # daily aggregates
+    print ow.get_historic_weather(4885, start_date, end_date, "day")
+    ```

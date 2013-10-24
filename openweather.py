@@ -28,16 +28,18 @@ class OpenWeather(object):
             % station_id)
         return self.do_request(url)
 
-    def get_historic_weather(self, station_id, from_date, to_date):
+    def get_historic_weather(self, station_id, from_date, to_date, resolution='hour'):
         """
         Loads historic values from given station. Start and end date have
         to be given as datetime objects.
         """
+        if resolution not in ['tick', 'hour', 'day']:
+            raise ValueError('Resolution has to be "tick", "hour" or "day".')
         from_ts = from_date.strftime('%s')
         to_ts = to_date.strftime('%s')
         url = (self.base_url +
-            '/history/station/%d?type=hour&start=%s&end=%s'
-            % (station_id, from_ts, to_ts))
+            '/history/station/%d?type=%s&start=%s&end=%s'
+            % (station_id, resolution, from_ts, to_ts))
         return self.do_request(url)
 
     def do_request(self, url):
