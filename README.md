@@ -2,11 +2,11 @@ VERY basic start for a OpenWeatherMap.org API client.
 
 Frankly, it as been written rather to test how Python modules are distributed. :)
 
-###Install
+##Install
 
     pip install openweather
 
-###Example
+##Python module example
     
 ```python
 import openweather
@@ -42,4 +42,18 @@ print ow.get_historic_weather(4885, start_date, end_date, "tick")
 
 # daily aggregates
 print ow.get_historic_weather(4885, start_date, end_date, "day")
+```
+
+## Command line client example
+
+Print current weather at station ID 4885:
+
+```
+python -m openweather -s 4885
+```
+
+Print historic weather at station ID 4885:
+
+```
+python -m openweather -s 4885 --historic
 ```
