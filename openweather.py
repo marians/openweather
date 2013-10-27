@@ -67,6 +67,7 @@ class OpenWeather(object):
 if __name__ == '__main__':
     """Command line client mode"""
     import argparse
+    import daterangestr
     import sys
     parser = argparse.ArgumentParser(description='Get weather information from OpenWeatherMap.')
     parser.add_argument('-s', '--station', dest='station_id', type=int, metavar='STATION',
@@ -74,6 +75,8 @@ if __name__ == '__main__':
     parser.add_argument('--historic', dest='get_historic', action='store_true',
                    default=False,
                    help='Get historic data instead of recent')
+    parser.add_argument('--date', dest='daterange',
+                   help='Date range for historic data retrieval, as string YYYYMMDD-YYYYMMDD.')
     args = parser.parse_args()
     if args.station_id is None:
         sys.stderr.write("ERROR: No station ID given. Use -s parameter, e.g. -s 4885.\n")
@@ -81,7 +84,15 @@ if __name__ == '__main__':
     ow = OpenWeather()
     weather = None
     if args.get_historic:
-        weather = ow.get_historic_weather(station_id=args.station_id, resolution="tick")
+        from_date = None
+        to_date = None
+        if args.daterange is not None:
+            (from_date, to_date) = daterangestr.to_dates(args.daterange)
+        weather = ow.get_historic_weather(
+            station_id=args.station_id,
+            from_date=from_date,
+            to_date=to_date,
+            resolution="tick")
     else:
         weather = ow.get_weather(args.station_id)
     print json.dumps(weather, indent=4, sort_keys=True)

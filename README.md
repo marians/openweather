@@ -57,3 +57,11 @@ Print historic weather at station ID 4885:
 ```
 python -m openweather -s 4885 --historic
 ```
+
+Print historic weather for 2013-10-01 at station ID 4885:
+
+```
+python -m openweather -s 4885 --historic --date 20131001
+```
+
+For valid formats of the `--date` parameter, see [daterangestr](https://github.com/marians/py-daterangestr).
