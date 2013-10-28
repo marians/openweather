@@ -69,7 +69,7 @@ For valid formats of the `--date` parameter, see [daterangestr](https://github.c
 Print historic data in CSV format
 
 ```sh
-$ python openweather.py -s 4885 --historic --date 20131022 --csv|csvcut -c 10,14,23,25|csvlook
+$ python openweather.py -s 4885 --historic --date 20131022 --csv
 ```
 
 This is particularly usefull if you want to store that data to a file...
