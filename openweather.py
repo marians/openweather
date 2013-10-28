@@ -8,6 +8,7 @@ http://openweathermap.org/wiki/API/2.1/JSON_API
 import json
 import urllib
 from datetime import datetime
+import collections
 
 
 class OpenWeather(object):
@@ -46,9 +47,9 @@ class OpenWeather(object):
             raise ValueError('Resolution has to be "tick", "hour" or "day".')
         from_ts = ''
         to_ts = ''
-        if type(from_date) == datetime:
+        if isinstance(from_date, datetime):
             from_ts = from_date.strftime('%s')
-        if type(to_date) == datetime:
+        if isinstance(to_date, datetime):
             to_ts = to_date.strftime('%s')
         url = (self.base_url +
             '/history/station/%d?type=%s&start=%s&end=%s'
@@ -64,6 +65,52 @@ class OpenWeather(object):
         return data
 
 
+def flatten_dict(d, parent_key=''):
+    """Recursively flatten a dict"""
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + '_' + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten_dict(v, new_key).items())
+        elif type(v) == list:
+            for n in range(len(v)):
+                mykey = "%s_%d" % (new_key, n)
+                items.extend(flatten_dict(v[n], mykey).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
+def to_csv(d):
+    """Turn data into CSV and return"""
+    import csv
+    from StringIO import StringIO
+    # collect all field names
+    fieldnames = set()
+    flattened_records = []
+    for record in d:
+        record = flatten_dict(record)
+        for field in record.keys():
+            fieldnames.add(field)
+        flattened_records.append(record)
+    fieldnames = sorted(fieldnames)
+    out = None
+    csvfile = StringIO()
+    writer = csv.writer(csvfile, quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(fieldnames)
+    for record in flattened_records:
+        row = []
+        for field in fieldnames:
+            if field in record:
+                row.append(str(record[field]))
+            else:
+                row.append('')
+        writer.writerow(row)
+    out = csvfile.getvalue()
+    csvfile.close()
+    return out
+
+
 if __name__ == '__main__':
     """Command line client mode"""
     import argparse
@@ -77,6 +124,9 @@ if __name__ == '__main__':
                    help='Get historic data instead of recent')
     parser.add_argument('--date', dest='daterange',
                    help='Date range for historic data retrieval, as string YYYYMMDD-YYYYMMDD.')
+    parser.add_argument('--csv', dest='csv', action='store_true',
+                   default=False,
+                   help='Use CSV as output format for historic values')
     args = parser.parse_args()
     if args.station_id is None:
         sys.stderr.write("ERROR: No station ID given. Use -s parameter, e.g. -s 4885.\n")
@@ -92,7 +142,11 @@ if __name__ == '__main__':
             station_id=args.station_id,
             from_date=from_date,
             to_date=to_date,
-            resolution="tick")
+            resolution="hour")
+        if args.csv:
+            print to_csv(weather)
+        else:
+            print json.dumps(weather, indent=4, sort_keys=True)
     else:
         weather = ow.get_weather(args.station_id)
-    print json.dumps(weather, indent=4, sort_keys=True)
+        print json.dumps(flatten_dict(weather), indent=4, sort_keys=True)
