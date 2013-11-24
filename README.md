@@ -49,19 +49,19 @@ print ow.get_historic_weather(4885, start_date, end_date, "day")
 Print current weather at station ID 4885:
 
 ```sh
-$ python -m openweather -s 4885
+$ openweather -s 4885
 ```
 
 Print historic weather at station ID 4885:
 
 ```sh
-$ python -m openweather -s 4885 --historic
+$ openweather -s 4885 --historic
 ```
 
 Print historic weather for 2013-10-01 at station ID 4885:
 
 ```sh
-$ python -m openweather -s 4885 --historic --date 20131001
+$ openweather -s 4885 --historic --date 20131001
 ```
 
 For valid formats of the `--date` parameter, see [daterangestr](https://github.com/marians/py-daterangestr).
@@ -75,13 +75,13 @@ $ python openweather.py -s 4885 --historic --date 20131022 --csv
 This is particularly usefull if you want to store that data to a file...
 
 ```sh
-$ python -m openweather -s 4885 --historic --date 20131022 --csv > weather.csv
+$ openweather -s 4885 --historic --date 20131022 --csv > weather.csv
 ```
 
 ... or want to manipulate and display it (using [csvkit](https://github.com/onyxfish/csvkit)):
 
 ```sh
-$ python openweather.py -s 4885 --historic --date 20131027 --csv|csvcut -c 9,26,30,35,43|csvlook
+$ openweather -s 4885 --historic --date 20131027 --csv|csvcut -c 9,26,30,35,43|csvlook
 |-------------+-------------+------------+------------+---------------|
 |  dt         | main_temp_v | pressure_v | wind_deg_v | wind_speed_v  |
 |-------------+-------------+------------+------------+---------------|
@@ -96,6 +96,6 @@ $ python openweather.py -s 4885 --historic --date 20131027 --csv|csvcut -c 9,26,
 |-------------+-------------+------------+------------+---------------|
 ```
 
-## Like audiocalc?
+## Like openweather?
 
 Feel free to [tip me](https://www.gittip.com/marians/)!

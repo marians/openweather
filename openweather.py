@@ -111,7 +111,7 @@ def to_csv(d):
     return out
 
 
-if __name__ == '__main__':
+def main():
     """Command line client mode"""
     import argparse
     import daterangestr
@@ -150,3 +150,6 @@ if __name__ == '__main__':
     else:
         weather = ow.get_weather(args.station_id)
         print json.dumps(flatten_dict(weather), indent=4, sort_keys=True)
+
+if __name__ == '__main__':
+    main()
