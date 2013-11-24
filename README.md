@@ -95,3 +95,7 @@ $ python openweather.py -s 4885 --historic --date 20131027 --csv|csvcut -c 9,26,
 |             |             |            |            |               |
 |-------------+-------------+------------+------------+---------------|
 ```
+
+## Like audiocalc?
+
+Feel free to [tip me](https://www.gittip.com/marians/)!
