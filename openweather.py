@@ -9,6 +9,9 @@ import json
 import urllib
 from datetime import datetime
 import collections
+import time
+import math
+import sys
 
 
 class OpenWeather(object):
@@ -58,11 +61,23 @@ class OpenWeather(object):
         if 'list' in data:
             return data['list']
 
-    def do_request(self, url):
-        request = urllib.urlopen(url)
-        data = request.read()
-        data = json.loads(data)
-        return data
+    def do_request(self, url, retries=3):
+        nattempts = 0
+        while nattempts < retries:
+            try:
+                request = urllib.urlopen(url)
+                data = request.read()
+                data = json.loads(data)
+                return data
+            except ValueError as e:
+                sys.stderr.write("OpenWeather.do_request() got ValueError: %s (%s. attempt)\n" % (
+                    e, nattempts + 1))
+                time.sleep(math.pow(nattempts + 1, 2))
+            except:
+                sys.stderr.write("OpenWeather.do_request() got exception: %s (%s. attempt)\n" % (
+                    type(e), nattempts + 1))
+                time.sleep(math.pow(nattempts + 1, 2))
+            nattempts += 1
 
 
 def flatten_dict(d, parent_key=''):
