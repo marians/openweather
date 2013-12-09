@@ -8,16 +8,36 @@ http://openweathermap.org/wiki/API/2.1/JSON_API
 import json
 import urllib
 from datetime import datetime
+from datetime import timedelta
 import collections
 import time
 import math
 import sys
+import pickle
+import sqlite3
 
 
 class OpenWeather(object):
 
-    def __init__(self):
+    def __init__(self, verbose=False, cache=True):
+        """
+        verbose: Activate verbose output (default: False)
+        cache: Set False to deactivate, set to path string to
+            explicitly set cache db path. Default: True
+        """
+        self.cache_path = "openweather-cache.db"
         self.base_url = 'http://openweathermap.org/data/2.1'
+        self.verbose = verbose
+        self.cache = False
+        if cache is not False:
+            if cache is not True:
+                self.cache_path = cache
+            self.cacheconn = sqlite3.connect(self.cache_path)
+            self.cache = self.cacheconn.cursor()
+            self.cache.execute("""CREATE TABLE IF NOT EXISTS values_hour
+                (dt INTEGER, payload BLOB, PRIMARY KEY(dt ASC))""")
+            self.cache.execute("""CREATE TABLE IF NOT EXISTS values_day
+                (dt INTEGER, payload BLOB, PRIMARY KEY(dt ASC))""")
 
     def find_stations_near(self, lon, lat, radius_limit=20):
         """
@@ -44,26 +64,66 @@ class OpenWeather(object):
             resolution='hour'):
         """
         Loads historic values from given station. Start and end date have
-        to be given as datetime objects.
+        to be given as datetime objects. Data is only requested from the
+        server if it's not contained in the database. API results are
+        cached in the database.
         """
-        if resolution not in ['tick', 'hour', 'day']:
-            raise ValueError('Resolution has to be "tick", "hour" or "day".')
+        if resolution not in ['hour', 'day']:
+            raise ValueError('Resolution has to be "hour" or "day".')
         from_ts = ''
         to_ts = ''
         if isinstance(from_date, datetime):
-            from_ts = from_date.strftime('%s')
+            from_ts = int(from_date.strftime('%s'))
         if isinstance(to_date, datetime):
-            to_ts = to_date.strftime('%s')
+            to_ts = int(to_date.strftime('%s'))
+        # counting record in DB
+        if self.cache:
+            self.cache.execute("SELECT COUNT(*) FROM values_%s WHERE dt >= ? AND dt <= ?" % resolution,
+                [from_ts, to_ts])
+            result = self.cache.fetchone()
+            rows_expected = (to_ts - from_ts) / 60 / 60
+            if resolution == 'day':
+                rows_expected = rows_expected / 24
+            rows_expected += 1
+            #print("Expected rows: %d" % rows_expected)
+            #print("Available rows: %d" % result[0])
+            if result[0] >= rows_expected:
+                # fetch from cache
+                self.cache.execute("SELECT dt, payload FROM values_%s WHERE dt >= ? AND dt <= ?" % resolution,
+                [from_ts, to_ts])
+                data = []
+                for row in self.cache.fetchall():
+                    data.append(pickle.loads(str(row[1])))
+                return data
+        # Cache missed or inactive.
+        # Fetching a little more than required
+        from_ts_request = from_ts
+        to_ts_request = to_ts
+        if resolution == 'hour':
+            if (to_ts - from_ts) < (60 * 60 * 24):
+                from_date_request = from_date.replace(hour=0, minute=0, second=0)
+                from_ts_request = from_date_request.strftime('%s')
+                to_date_request = from_date_request + timedelta(hours=24)
+                to_ts_request = to_date_request.strftime('%s')
+                #print(from_date_request, to_date_request)
+
         url = (self.base_url +
             '/history/station/%d?type=%s&start=%s&end=%s'
-            % (station_id, resolution, from_ts, to_ts))
+            % (station_id, resolution, from_ts_request, to_ts_request))
         data = self.do_request(url)
         if 'list' in data:
+            if self.cache:
+                for rec in data['list']:
+                    self.cache.execute("INSERT OR IGNORE INTO values_%s VALUES (?, ?)"
+                        % resolution, [rec['dt'], pickle.dumps(rec)])
+                self.cacheconn.commit()
             return data['list']
 
     def do_request(self, url, retries=3):
         nattempts = 0
         while nattempts < retries:
+            if self.verbose:
+                print("Requesting %s" % url)
             try:
                 request = urllib.urlopen(url)
                 data = request.read()
@@ -134,10 +194,7 @@ def main():
     parser = argparse.ArgumentParser(description='Get weather information from OpenWeatherMap.')
     parser.add_argument('-s', '--station', dest='station_id', type=int, metavar='STATION',
                    help='Station ID to get information for')
-    parser.add_argument('--historic', dest='get_historic', action='store_true',
-                   default=False,
-                   help='Get historic data instead of recent')
-    parser.add_argument('--date', dest='daterange',
+    parser.add_argument('-d', '--date', dest='daterange',
                    help='Date range for historic data retrieval, as string YYYYMMDD-YYYYMMDD.')
     parser.add_argument('--csv', dest='csv', action='store_true',
                    default=False,
@@ -148,23 +205,20 @@ def main():
         sys.exit(1)
     ow = OpenWeather()
     weather = None
-    if args.get_historic:
-        from_date = None
-        to_date = None
-        if args.daterange is not None:
-            (from_date, to_date) = daterangestr.to_dates(args.daterange)
+    if args.daterange is not None:
+        (from_date, to_date) = daterangestr.to_dates(args.daterange)
         weather = ow.get_historic_weather(
             station_id=args.station_id,
             from_date=from_date,
             to_date=to_date,
             resolution="hour")
         if args.csv:
-            print to_csv(weather)
+            print(to_csv(weather))
         else:
-            print json.dumps(weather, indent=4, sort_keys=True)
+            print(json.dumps(weather, indent=4, sort_keys=True))
     else:
         weather = ow.get_weather(args.station_id)
-        print json.dumps(flatten_dict(weather), indent=4, sort_keys=True)
+        print(json.dumps(flatten_dict(weather), indent=4, sort_keys=True))
 
 if __name__ == '__main__':
     main()

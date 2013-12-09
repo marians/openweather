@@ -1,10 +1,35 @@
-VERY basic start for a OpenWeatherMap.org API client.
+A basic OpenWeatherMap.org API client.
 
-Frankly, it as been written rather to test how Python modules are distributed. :)
+## News on experimental caching:
+
+The version here in the repository is currently ahead of the latest 
+version distributed on PyPy (0.9). It features Caching.
+
+If the cache isn't explicitly deactivated, the function "get_historic_weather()"
+stores data fetched from the API in an SQLite database. On subsequent
+requests, data is fetched directly from the database, if available.
+
+In order to deactivate the cache, use
+
+```python
+ow = openweather.OpenWeather(cache=False)
+```
+
+and in order to explicitly set a path for the cache DB file, use
+
+```python
+ow = openweather.OpenWeather(cache="path/to/cache.db")
+```
 
 ##Install
 
+To install the latest release:
+
     pip install openweather
+
+For the latest version from the repository, use:
+
+    pip install git+https://github.com/marians/openweather.git
 
 ##Python module example
     
@@ -36,9 +61,6 @@ end_date = datetime(2013, 09, 15)
 
 # default: hourly interval
 print ow.get_historic_weather(4885, start_date, end_date)
-
-# raw data (resolution = "tick")
-print ow.get_historic_weather(4885, start_date, end_date, "tick")
 
 # daily aggregates
 print ow.get_historic_weather(4885, start_date, end_date, "day")
