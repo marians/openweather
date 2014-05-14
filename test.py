@@ -5,7 +5,6 @@ import unittest
 from datetime import datetime
 from datetime import timedelta
 import os
-import sqlite3
 
 
 class TestSequenceFunctions(unittest.TestCase):
