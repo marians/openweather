@@ -111,13 +111,17 @@ class OpenWeather(object):
             '/history/station/%d?type=%s&start=%s&end=%s'
             % (station_id, resolution, from_ts_request, to_ts_request))
         data = self.do_request(url)
-        if 'list' in data:
-            if self.cache:
-                for rec in data['list']:
-                    self.cache.execute("INSERT OR IGNORE INTO values_%s VALUES (?, ?)"
-                        % resolution, [rec['dt'], pickle.dumps(rec)])
-                self.cacheconn.commit()
-            return data['list']
+        if data is not None:
+            if 'list' in data:
+                if self.cache:
+                    for rec in data['list']:
+                        self.cache.execute("INSERT OR IGNORE INTO values_%s VALUES (?, ?)"
+                            % resolution, [rec['dt'], pickle.dumps(rec)])
+                    self.cacheconn.commit()
+                return data['list']
+        else:
+            # maybe handle the None case here? Exception?
+            pass
 
     def do_request(self, url, retries=3):
         nattempts = 0
@@ -203,11 +207,14 @@ def main():
     parser.add_argument('--csv', dest='csv', action='store_true',
                    default=False,
                    help='Use CSV as output format for historic values')
+    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
+                   default=False,
+                   help='Enable verbose output')
     args = parser.parse_args()
     if args.station_id is None:
         sys.stderr.write("ERROR: No station ID given. Use -s parameter, e.g. -s 4885.\n")
         sys.exit(1)
-    ow = OpenWeather()
+    ow = OpenWeather(verbose=args.verbose)
     weather = None
     if args.daterange is not None:
         (from_date, to_date) = daterangestr.to_dates(args.daterange)
