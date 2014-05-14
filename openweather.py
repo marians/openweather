@@ -130,12 +130,16 @@ class OpenWeather(object):
                 data = json.loads(data)
                 return data
             except ValueError as e:
-                sys.stderr.write("OpenWeather.do_request() got ValueError: %s (%s. attempt)\n" % (
-                    e, nattempts + 1))
+                sys.stderr.write("OpenWeather.do_request() got ValueError: %s (%s. attempt)\n" %
+                    (e, nattempts + 1))
                 time.sleep(math.pow(nattempts + 1, 2))
-            except:
-                sys.stderr.write("OpenWeather.do_request() got exception: %s (%s. attempt)\n" % (
-                    type(e), nattempts + 1))
+            except IOError:
+                sys.stderr.write("OpenWeather.do_request(): No connection. (%s. attempt)\n" %
+                    (nattempts + 1))
+                time.sleep(math.pow(nattempts + 1, 2))
+            except Exception as e:
+                sys.stderr.write("OpenWeather.do_request() got unknown exception: %s (%s. attempt)\n" %
+                    (type(e), nattempts + 1))
                 time.sleep(math.pow(nattempts + 1, 2))
             nattempts += 1
 
