@@ -53,6 +53,10 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertTrue("wind" in weather[0])
 
     def test_get_historic_weather_cache_1(self):
+        """
+        Get data for last day and count number of
+        items, check if > 0
+        """
         start = datetime.utcnow() - timedelta(days=5)
         end = start + timedelta(days=1)
         weather = self.ow.get_historic_weather(
@@ -68,7 +72,7 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertTrue("dt" in weather[0])
         self.assertTrue("wind" in weather[0])
         self.ow.cache.execute("SELECT COUNT(*) FROM values_hour")
-        self.assertEqual(self.ow.cache.fetchone()[0], 24)
+        self.assertTrue(self.ow.cache.fetchone()[0] > 0)
 
     def test_get_historic_weather_nocache_2(self):
         fromd = datetime(2013, 8, 1, 10)
