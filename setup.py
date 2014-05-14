@@ -9,7 +9,7 @@ except (IOError, ImportError):
     description = ''
 
 setup(name='openweather',
-      version='0.10rc1',
+      version='0.10',
       description='OpenWeatherMap.org API wrapper',
       long_description=description,
       author='Marian Steinbach',
