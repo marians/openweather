@@ -23,6 +23,8 @@ ow = openweather.OpenWeather(cache="path/to/cache.db")
 
 ##Install
 
+Note: Only tested with Python 2.7
+
 To install the latest release:
 
     pip install openweather
