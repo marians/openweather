@@ -1,3 +1,8 @@
+
+**Warning:** openweather is currently broken. If you want to help adapt it to the latest OpenWeatherMap API version 2.5, feel free to join [this PR](https://github.com/marians/openweather/pull/11).
+
+-----------------------------------------
+
 A basic OpenWeatherMap.org API client.
 
 ## News on experimental caching:
