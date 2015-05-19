@@ -72,10 +72,11 @@ class OpenWeather(object):
             raise ValueError('Resolution has to be "hour" or "day".')
         from_ts = ''
         to_ts = ''
+        start_time = datetime(1970,1,1)
         if isinstance(from_date, datetime):
-            from_ts = int(from_date.strftime('%s'))
+            from_ts = int((from_date - start_time).total_seconds())
         if isinstance(to_date, datetime):
-            to_ts = int(to_date.strftime('%s'))
+            to_ts = int((to_date - start_time).total_seconds())
         # counting record in DB
         if self.cache:
             self.cache.execute("SELECT COUNT(*) FROM values_%s WHERE dt >= ? AND dt <= ?" % resolution,
@@ -102,9 +103,9 @@ class OpenWeather(object):
         if resolution == 'hour':
             if (to_ts - from_ts) < (60 * 60 * 24):
                 from_date_request = from_date.replace(hour=0, minute=0, second=0)
-                from_ts_request = from_date_request.strftime('%s')
+                from_ts_request = (from_date_request - start_time).total_seconds()
                 to_date_request = from_date_request + timedelta(hours=24)
-                to_ts_request = to_date_request.strftime('%s')
+                to_ts_request = (to_date_request - start_time).total_seconds()
                 #print(from_date_request, to_date_request)
 
         url = (self.base_url +
