@@ -6,7 +6,8 @@ http://openweathermap.org/wiki/API/2.1/JSON_API
 """
 
 import json
-import urllib
+import requests
+from requests.adapters import HTTPAdapter
 from datetime import datetime
 from datetime import timedelta
 import collections
@@ -124,28 +125,12 @@ class OpenWeather(object):
             pass
 
     def do_request(self, url, retries=3):
-        nattempts = 0
-        while nattempts < retries:
-            if self.verbose:
-                print("Requesting %s" % url)
-            try:
-                request = urllib.urlopen(url)
-                data = request.read()
-                data = json.loads(data)
-                return data
-            except ValueError as e:
-                sys.stderr.write("OpenWeather.do_request() got ValueError: %s (%s. attempt)\n" %
-                    (e, nattempts + 1))
-                time.sleep(math.pow(nattempts + 1, 2))
-            except IOError:
-                sys.stderr.write("OpenWeather.do_request(): No connection. (%s. attempt)\n" %
-                    (nattempts + 1))
-                time.sleep(math.pow(nattempts + 1, 2))
-            except Exception as e:
-                sys.stderr.write("OpenWeather.do_request() got unknown exception: %s (%s. attempt)\n" %
-                    (type(e), nattempts + 1))
-                time.sleep(math.pow(nattempts + 1, 2))
-            nattempts += 1
+        s = requests.Session()
+        s.mount(self.base_url, HTTPAdapter(max_retries=retries))
+        if self.verbose:
+            print("Requesting %s" % url)
+        request = requests.get(url)
+        return request.json()
 
 
 def flatten_dict(d, parent_key=''):

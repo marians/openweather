@@ -16,7 +16,7 @@ setup(name='openweather',
       author_email='marian@sendung.de',
       url='http://github.com/marians/openweather',
       py_modules=['openweather'],
-      install_requires=['daterangestr'],
+      install_requires=['daterangestr', 'requests'],
       entry_points={
         'console_scripts': [
             'openweather = openweather:main'
