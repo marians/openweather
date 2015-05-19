@@ -2,7 +2,8 @@
 
 """
 API docs available at
-http://openweathermap.org/wiki/API/2.1/JSON_API
+http://openweathermap.org/current
+http://openweathermap.org/api_station
 """
 
 import json
@@ -27,7 +28,7 @@ class OpenWeather(object):
             explicitly set cache db path. Default: True
         """
         self.cache_path = "openweather-cache.db"
-        self.base_url = 'http://openweathermap.org/data/2.1'
+        self.base_url = 'http://api.openweathermap.org/data/2.5'
         self.verbose = verbose
         self.cache = False
         if cache is not False:
@@ -40,14 +41,14 @@ class OpenWeather(object):
             self.cache.execute("""CREATE TABLE IF NOT EXISTS values_day
                 (dt INTEGER, payload BLOB, PRIMARY KEY(dt ASC))""")
 
-    def find_stations_near(self, lon, lat, radius_limit=20):
+    def find_stations_near(self, lon, lat, limit=30):
         """
         Searches for weather station near a given coordinate and
         returns them, ordered by distance
         """
         url = (self.base_url +
-            '/find/station?lat=%s&lon=%s&radius=%d'
-            % (lat, lon, radius_limit))
+            '/station/find?lat=%s&lon=%s&cnt=%d'
+            % (lat, lon, limit))
         return self.do_request(url)
 
     def get_weather(self, station_id):
@@ -55,10 +56,10 @@ class OpenWeather(object):
         Returns recent weather data for given station
         """
         url = (self.base_url +
-            '/weather/station/%d?type=json'
+            '/station?id=%d'
             % station_id)
         data = self.do_request(url)
-        return data
+        return data["last"]
 
     def get_historic_weather(self, station_id,
             from_date=None, to_date=None,
@@ -109,7 +110,7 @@ class OpenWeather(object):
                 #print(from_date_request, to_date_request)
 
         url = (self.base_url +
-            '/history/station/%d?type=%s&start=%s&end=%s'
+            '/history/station?id=%d&type=%s&start=%s&end=%s'
             % (station_id, resolution, from_ts_request, to_ts_request))
         data = self.do_request(url)
         if data is not None:
